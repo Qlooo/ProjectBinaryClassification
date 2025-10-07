@@ -1,0 +1,20 @@
+stages:
+  train:
+    cmd: PYTHONPATH=src python -m heart_pred.train --params params.yaml --artifacts artifacts
+    deps:
+      - data/heart.csv
+      - params.yaml
+      - src/heart_pred/preprocessing.py
+      - src/heart_pred/train.py
+    outs:
+      - artifacts/model.joblib
+    metrics:
+      - artifacts/metrics.json:
+          cache: false
+
+  evaluate:
+    cmd: PYTHONPATH=src python -m heart_pred.evaluate --model artifacts/model.joblib --params params.yaml
+    deps:
+      - artifacts/model.joblib
+      - params.yaml
+      - src/heart_pred/evaluate.py

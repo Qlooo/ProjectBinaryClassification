@@ -1,0 +1,13 @@
+seed: 42
+data:
+  url: ""           # optional: put a URL or leave empty if data is local
+  path: data/heart.csv
+  target: cardio
+  test_size: 0.2
+
+model:
+  type: logistic_regression
+  logreg:
+    C: 1.0
+    max_iter: 2000
+    class_weight: balanced

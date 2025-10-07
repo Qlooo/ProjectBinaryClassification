@@ -1,0 +1,47 @@
+schema: '2.0'
+stages:
+  train:
+    cmd: PYTHONPATH=src python -m heart_pred.train --params params.yaml 
+      --artifacts artifacts
+    deps:
+    - path: data/heart.csv
+      hash: md5
+      md5: 71c46a70f7ba9e3e4736ae73ecd5bac9
+      size: 2941524
+    - path: params.yaml
+      hash: md5
+      md5: 668b6b129b37bb0111e9c605c21b48ca
+      size: 249
+    - path: src/heart_pred/preprocessing.py
+      hash: md5
+      md5: 64411a5ce2d0fb782a71c178fd6f52aa
+      size: 1449
+    - path: src/heart_pred/train.py
+      hash: md5
+      md5: 54eec7501aeb518d4b14599288f1c40c
+      size: 3160
+    outs:
+    - path: artifacts/metrics.json
+      hash: md5
+      md5: ee17610f1b364a371e4a2e03dd4506d4
+      size: 219
+    - path: artifacts/model.joblib
+      hash: md5
+      md5: 51b87d6e2db2353dfe0dd03ba7d19241
+      size: 3069
+  evaluate:
+    cmd: PYTHONPATH=src python -m heart_pred.evaluate --model 
+      artifacts/model.joblib --params params.yaml
+    deps:
+    - path: artifacts/model.joblib
+      hash: md5
+      md5: 51b87d6e2db2353dfe0dd03ba7d19241
+      size: 3069
+    - path: params.yaml
+      hash: md5
+      md5: 668b6b129b37bb0111e9c605c21b48ca
+      size: 249
+    - path: src/heart_pred/evaluate.py
+      hash: md5
+      md5: 8a80554c91d9fca8acb82f023de02f11
+      size: 3
