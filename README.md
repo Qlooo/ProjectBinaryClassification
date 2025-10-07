@@ -1,6 +1,7 @@
 # ProjectBinaryClassification
 End-to-end пайплайн бинарной классификации на датасете Cardiovascular Disease (70k записей, Kaggle)
 # Project structure
+```
 heart_project/
 ├─ src/heart_pred/             
 │  ├─ __init__.py
@@ -13,7 +14,7 @@ heart_project/
 ├─ requirements.txt
 └─ tests/
    └─ test_preprocessing.py
-
+```
 # Quickstart
 
 1. Create virtual environment and install dependencies:
