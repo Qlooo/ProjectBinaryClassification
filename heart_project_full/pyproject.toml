@@ -1,0 +1,15 @@
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+exclude = '''/(
+  \.
+  venv
+  | \venv
+  | build
+  | dist
+  | .eggs
+)/'''
+[tool.isort]
+profile = "black"
+known_first_party = "heart_pred"
