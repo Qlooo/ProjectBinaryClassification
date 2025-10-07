@@ -1,86 +1,83 @@
-# Heart Prediction — Reproducible ML Pipeline
+Heart Prediction — воспроизводимый ML-проект
 
-**Role focus:** ML/DevOps engineering — code engineering, reproducibility, automation, documentation, deployment preparedness.
+Фокус роли: ML/DevOps-инженерия — инженерия кода, воспроизводимость, автоматизация, документация, готовность к деплою. 
 
-This repository converts a research notebook into a clean, testable, and reproducible project. It includes:
-- Structured Python package (`src/heart_pred`)
-- Versioned environments (`requirements.txt`, `environment.yml`)
-- Refactored code split into logical modules (data, preprocessing, training, evaluation)
-- Unit tests (pytest)
-- Code quality (black, isort, flake8)
-- One-command reproducible pipeline with DVC (`dvc.yaml`, `params.yaml`)
-- Clear instructions in this README
+README
 
-> **Notebook provenance**: This project was bootstrapped from `Heart_prediction.ipynb`.  
-> Short excerpt / signals detected to infer target column and structure:
+Репозиторий конвертирует исследовательский ноутбук в чистый, тестируемый и воспроизводимый проект. В составе:
 
-```
-**Cardiovascular Disease (сердечно-сосудистые заболевания)** — публичный набор данных (~70 000 наблюдений), цель — бинарная переменная cardio (1 — есть заболевание, 0 — нет). Каждая строка — один пациент/осмотр.
+Структурированный Python-пакет src/heart_pred
 
-https://www.kaggle.com/datasets/sulianova/cardiovascular-disease-dataset
+Зафиксированное окружение (requirements.txt, environment.yml)
 
-**Основные признаки**:
+Рефакторинг на логические модули (данные, предобработка, обучение, оценка)
 
-*   **age** — возраст в днях;
-*   **gender** — пол (1 — женщина, 2 — мужчина);
-*   **height** — рост, см;
-*   **weight** — масса, кг;
-*   **ap_hi** — систолическое артериальное давление, мм рт. ст.;
-*   **ap_lo** — диастолическое артериальное давление, мм рт. ст.;
-*   **cholesterol** — ур
-```
+Модульные тесты (pytest)
 
-Target column inferred: `num` (you can change it in `params.yaml`).
+Контроль качества кода (black, isort, flake8)
 
----
+Воспроизводимый конвейер с DVC (dvc.yaml, params.yaml)
 
-## Quickstart
+Пошаговые инструкции (этот README)
 
-### 1) Clone and setup
-```bash
+Происхождение: проект собран из ноутбука Heart_prediction.ipynb.
+Целевая колонка настраивается в params.yaml (по умолчанию cardio/num — проверь свой датасет).
+
+Быстрый старт
+1) Подготовка окружения
+
+macOS/Linux
+
 python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -U pip
 pip install -r requirements.txt
-```
 
-Or with Conda:
-```bash
-conda env create -f environment.yml
-conda activate heart-mlops
-```
 
-### 2) Put your data
-- If you have a CSV locally, put it at `data/heart.csv` (default) or update `params.yaml:data.path`.
-- If you have a URL, set `params.yaml:data.url` and DVC will download it.
+Windows (PowerShell)
 
-### 3) Reproduce the full pipeline
-```bash
-dvc repro
-```
-Artifacts:
-- `artifacts/model.joblib` — trained pipeline (preprocessing + model)
-- `artifacts/metrics.json` — holdout and CV metrics
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -U pip
+pip install -r requirements.txt
 
-### 4) Run tests and linters
-```bash
+2) Данные
+
+Положи CSV в data/heart.csv или укажи путь/URL в params.yaml:
+
+data:
+  url: ""            # оставь пустым, если файл локальный
+  path: data/heart.csv
+  target: cardio     # или твой таргет
+  test_size: 0.2
+
+
+Загрузчик автоматически определяет разделитель (,/;/\t).
+
+3) Полный конвейер (DVC)
+# если DVC ещё не инициализирован
+dvc init --no-scm   # или просто `dvc init`, если используешь git
+dvc repro           # запустить все стадии (train -> evaluate)
+
+
+Артефакты:
+
+artifacts/model.joblib — конвейер (предобработка + модель)
+
+artifacts/metrics.json — метрики валидации/holdout
+
+4) Ручной запуск (без DVC)
+export PYTHONPATH=$PWD/src   # Windows: set PYTHONPATH=%cd%\src
+python -m heart_pred.train --params params.yaml --artifacts artifacts
+python -m heart_pred.evaluate --model artifacts/model.joblib --params params.yaml
+
+5) Тесты и линтинг
 pytest
 isort src tests
 black src tests
 flake8 src tests
-```
 
-### 5) Train & evaluate manually
-```bash
-python -m heart_pred.train --params params.yaml --artifacts artifacts
-python -m heart_pred.evaluate --model artifacts/model.joblib --params params.yaml
-```
-
----
-
-## Project structure
-
-```
+Структура проекта
 .
 ├── dvc.yaml
 ├── params.yaml
@@ -92,32 +89,63 @@ python -m heart_pred.evaluate --model artifacts/model.joblib --params params.yam
 ├── src/
 │   └── heart_pred/
 │       ├── __init__.py
-│       ├── data.py
-│       ├── preprocessing.py
-│       ├── train.py
-│       └── evaluate.py
+│       ├── data.py            # загрузка и автодетект разделителя
+│       ├── preprocessing.py   # разбиение X/y, пайплайн предобработки
+│       ├── train.py           # обучение + CV + сохранение артефактов
+│       └── evaluate.py        # оценка модели на данных
 ├── tests/
 │   └── test_preprocessing.py
-└── data/            # (ignored) place heart.csv here or set a URL in params.yaml
-```
+└── data/                      # .gitignore/.dvcignore: положи сюда heart.csv
 
----
+Модель
 
-## Notes on deployment preparedness
+Модель задаётся параметрами в params.yaml. По умолчанию — логистическая регрессия. Можно переключить на XGBoost (пример):
 
-- The pipeline saves a single `joblib` artifact that includes preprocessing and the model; it can be loaded directly in an API service to serve predictions.
-- To containerize, add a minimal `Dockerfile` and `uvicorn` FastAPI app that `joblib.load`s the model (out of scope here but trivial to add).
-- DVC remotes (e.g., S3, GDrive) can be set with `dvc remote add -d <name> <url>` to version data and artifacts alongside code.
+model:
+  type: xgboost
+  xgboost:
+    n_estimators: 400
+    max_depth: 6
+    learning_rate: 0.05
+    subsample: 0.9
+    colsample_bytree: 0.9
+    reg_lambda: 1.0
+    tree_method: auto
 
----
 
-## Maintainer commands
 
-- `make all` — format, lint, test, train, evaluate
-- `make pipeline` — run the DVC pipeline
+Визуализация результатов (ROC/PR/матрица ошибок/важность признаков)
 
----
+Скрипт scripts/visualize.py строит ключевые графики и сохраняет их в reports/:
 
-## License
+export PYTHONPATH=$PWD/src
+python scripts/visualize.py --model artifacts/model.joblib --params params.yaml --outdir reports
+# macOS:
+open reports/roc_curve.png reports/pr_curve.png reports/confusion_matrix.png reports/feature_importance.png
 
-MIT (or your preference).
+
+Чтобы запускать одной командой — добавь цель в Makefile:
+
+report:
+\tPYTHONPATH=src python scripts/visualize.py --model artifacts/model.joblib --params params.yaml --outdir reports
+
+
+И/или оформи отдельной стадией в dvc.yaml после evaluate.
+
+Команды сопровождающего (maintainer)
+
+make all — форматирование, линтинг, тесты, обучение, оценка
+
+make report — генерация графиков (если добавлен scripts/visualize.py)
+
+dvc repro — полный воспроизводимый прогон конвейера
+
+dvc remote add -d <name> <url> → dvc push — подключение и выгрузка артефактов в удалённое хранилище (S3/GDrive/WebDAV и т.д.)
+
+Примечания по деплою
+
+Сохраняется единый joblib-объект (предобработка+модель). Его можно загрузить в сервис (FastAPI/Flask) и отдавать предсказания.
+
+Для контейнеризации добавь минимальный Dockerfile и приложение FastAPI, которое делает joblib.load("artifacts/model.joblib").
+
+DVC-remote позволит хранить версии данных/моделей синхронно с кодом.
