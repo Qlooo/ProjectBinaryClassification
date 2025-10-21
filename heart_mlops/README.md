@@ -94,7 +94,12 @@ flake8 src tests
 ├── tests/
 │   └── test_preprocessing.py
 └── data/
-      └── heart.csv                      
+│      └── heart.csv
+└── scripts/
+│       └── visualize.py
+└── artifacts/
+      └── metrics.json
+      └── model.joblib                            
 ```
 
 ---
