@@ -93,7 +93,8 @@ flake8 src tests
 │       └── evaluate.py        # оценка модели на данных
 ├── tests/
 │   └── test_preprocessing.py
-└── data/                      # .gitignore/.dvcignore: положи сюда heart.csv
+└── data/
+      └── heart.csv                      
 ```
 
 ---
